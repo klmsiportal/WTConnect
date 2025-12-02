@@ -1,7 +1,6 @@
 
-
 import React, { useState } from 'react';
-import { Heart, MessageCircle, Share2, MoreHorizontal, Sparkles, Image as ImageIcon, Video, Send, Loader2, Edit2, Play, Trash2, Check, PenTool, FileText } from 'lucide-react';
+import { Heart, MessageCircle, Share2, MoreHorizontal, Sparkles, Image as ImageIcon, Video, Send, Loader2, Edit2, Play, Trash2, Check, PenTool, FileText, Smile, MapPin, UserPlus } from 'lucide-react';
 import { Post, User, Comment } from '../types';
 import { Button } from './Button';
 import { generatePostEnhancement, generateImage, generateVideo, summarizeText, draftPostFromTopic } from '../services/geminiService';
@@ -164,15 +163,15 @@ export const Feed: React.FC<FeedProps> = ({ currentUser, users, posts, setPosts,
       {!isFreeMode && <Stories currentUser={currentUser} users={users} />}
 
       {/* Create Post Widget */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-5 mb-6 transition-colors">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-4 mb-6 transition-colors">
         <div className="flex gap-4">
-          <img src={currentUser.avatar} alt="Me" className="w-12 h-12 rounded-full object-cover ring-2 ring-gray-100 dark:ring-gray-700" />
+          <img src={currentUser.avatar} alt="Me" className="w-10 h-10 rounded-full object-cover ring-2 ring-gray-100 dark:ring-gray-700" />
           <div className="flex-1">
             <textarea
               value={newPostContent}
               onChange={(e) => setNewPostContent(e.target.value)}
               placeholder={`What's on your mind, ${currentUser.name.split(' ')[0]}?`}
-              className="w-full border-none focus:ring-0 resize-none text-gray-900 dark:text-gray-100 placeholder-gray-400 text-lg h-20 p-0 bg-transparent"
+              className="w-full border-none focus:ring-0 resize-none text-gray-900 dark:text-gray-100 placeholder-gray-500 text-lg h-12 p-0 bg-transparent min-h-[60px]"
             />
             
             {generatedMedia && !isFreeMode && (
@@ -208,16 +207,39 @@ export const Feed: React.FC<FeedProps> = ({ currentUser, users, posts, setPosts,
                     </div>
                 </div>
             )}
+            
+            {/* Divider */}
+            <div className="border-t border-gray-100 dark:border-gray-700 my-3"></div>
 
-            <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100 dark:border-gray-700">
-              <div className="flex gap-1">
-                <button onClick={() => isFreeMode ? alert("Disable Free Mode to generate media") : setShowMediaOptions(!showMediaOptions)} className="p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-indigo-600 rounded-full transition-colors" title="Generate Media">
-                  <ImageIcon size={20} />
+            <div className="flex items-center justify-between">
+              <div className="flex gap-1 overflow-x-auto no-scrollbar">
+                <button 
+                  onClick={() => isFreeMode ? alert("Disable Free Mode to generate media") : setShowMediaOptions(!showMediaOptions)} 
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                >
+                  <ImageIcon size={20} className="text-green-500" />
+                  <span className="text-sm text-gray-600 dark:text-gray-300 font-medium whitespace-nowrap hidden sm:inline">Photo/Video</span>
                 </button>
+                 <button 
+                   onClick={() => alert("Tag friends feature coming soon!")}
+                   className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                 >
+                  <UserPlus size={20} className="text-blue-500" />
+                  <span className="text-sm text-gray-600 dark:text-gray-300 font-medium whitespace-nowrap hidden sm:inline">Tag Friends</span>
+                </button>
+                 <button 
+                   onClick={() => alert("Check-in feature coming soon!")}
+                   className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                 >
+                  <Smile size={20} className="text-yellow-500" />
+                  <span className="text-sm text-gray-600 dark:text-gray-300 font-medium whitespace-nowrap hidden sm:inline">Feeling</span>
+                </button>
+                 
+                 {/* AI Tools */}
                  <button 
                   onClick={handleDraft}
                   disabled={isDrafting}
-                  className="p-2 text-purple-600 hover:bg-purple-50 dark:hover:bg-gray-700 rounded-full transition-colors"
+                  className="p-2 text-purple-600 hover:bg-purple-50 dark:hover:bg-gray-700 rounded-full transition-colors ml-2"
                   title="Draft with AI"
                 >
                   {isDrafting ? <Loader2 className="animate-spin" size={20} /> : <PenTool size={20} />}
@@ -231,7 +253,7 @@ export const Feed: React.FC<FeedProps> = ({ currentUser, users, posts, setPosts,
                   {isEnhancing ? <Loader2 className="animate-spin" size={20} /> : <Sparkles size={20} />}
                 </button>
               </div>
-              <Button onClick={handlePost} disabled={!newPostContent.trim() && !generatedMedia} className="px-6 rounded-full">
+              <Button onClick={handlePost} disabled={!newPostContent.trim() && !generatedMedia} className="px-6 rounded-lg">
                 Post
               </Button>
             </div>

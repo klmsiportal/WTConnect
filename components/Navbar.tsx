@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Home, MessageSquare, User, Bell, Search, LogOut, Compass, Users, Menu, X, PlaySquare, Grid, Moon, Sun, Wifi, WifiOff } from 'lucide-react';
+import { Home, MessageSquare, User, Bell, Search, LogOut, Compass, Users, Menu as MenuIcon, X, PlaySquare, Grid, Moon, Sun, Wifi, WifiOff } from 'lucide-react';
 import { ViewState, Notification } from '../types';
 import { logout } from '../firebase';
 
@@ -78,6 +78,15 @@ export const Navbar: React.FC<NavbarProps> = ({
             label="Apps" 
             active={currentView === ViewState.APPS} 
             onClick={() => setView(ViewState.APPS)} 
+          />
+           {/* @ts-ignore */}
+           <NavItem 
+            icon={<MenuIcon size={20} />} 
+            label="Menu (All)" 
+            // @ts-ignore
+            active={currentView === 'MENU'} 
+            // @ts-ignore
+            onClick={() => setView('MENU')} 
           />
           <NavItem 
             icon={<User size={20} />} 
@@ -173,14 +182,17 @@ export const Navbar: React.FC<NavbarProps> = ({
             onClick={() => setView(ViewState.CLIPS)} 
           />
           <MobileNavItem 
-            icon={<Grid size={24} />} 
-            active={currentView === ViewState.APPS} 
-            onClick={() => setView(ViewState.APPS)} 
-          />
-          <MobileNavItem 
             icon={<MessageSquare size={24} />} 
             active={currentView === ViewState.CHAT} 
             onClick={() => setView(ViewState.CHAT)} 
+          />
+           {/* @ts-ignore */}
+           <MobileNavItem 
+            icon={<MenuIcon size={24} />} 
+            // @ts-ignore
+            active={currentView === 'MENU'} 
+            // @ts-ignore
+            onClick={() => setView('MENU')} 
           />
           <MobileNavItem 
             icon={<User size={24} />} 

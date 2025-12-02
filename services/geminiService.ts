@@ -15,8 +15,20 @@ const getApiKey = () => {
     return '';
 };
 
-const apiKey = getApiKey();
-const ai = new GoogleGenAI({ apiKey });
+// Lazy initialization to prevent module-level crashes
+let aiInstance: GoogleGenAI | null = null;
+
+const getAi = () => {
+    if (!aiInstance) {
+        const key = getApiKey();
+        if (key) {
+            aiInstance = new GoogleGenAI({ apiKey: key });
+        } else {
+            console.warn("Gemini API Key is missing. AI features will not work.");
+        }
+    }
+    return aiInstance;
+};
 
 // Helper to check for key in demo environment for paid models
 const ensureApiKey = async () => {
@@ -24,15 +36,18 @@ const ensureApiKey = async () => {
     const hasKey = await (window as any).aistudio.hasSelectedApiKey();
     if (!hasKey) {
       await (window as any).aistudio.openSelectKey();
+      // Re-init with new key if possible, or just return existing if env var was set
       return new GoogleGenAI({ apiKey: getApiKey() });
     }
   }
-  return ai;
+  return getAi();
 };
 
 // --- Text & Reasoning ---
 
 export const generatePostEnhancement = async (draftText: string): Promise<string> => {
+  const ai = getAi();
+  if (!ai) return draftText;
   try {
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
@@ -46,6 +61,8 @@ export const generatePostEnhancement = async (draftText: string): Promise<string
 };
 
 export const draftPostFromTopic = async (topic: string): Promise<string> => {
+    const ai = getAi();
+    if (!ai) return "";
     try {
         const response = await ai.models.generateContent({
             model: 'gemini-2.5-flash',
@@ -59,6 +76,8 @@ export const draftPostFromTopic = async (topic: string): Promise<string> => {
 }
 
 export const summarizeText = async (text: string): Promise<string> => {
+    const ai = getAi();
+    if (!ai) return "AI unavailable";
     try {
         const response = await ai.models.generateContent({
             model: 'gemini-2.5-flash-lite',
@@ -75,6 +94,9 @@ export const chatWithBot = async (
   message: string,
   mode: 'fast' | 'smart' | 'creative' = 'fast'
 ): Promise<string> => {
+  const ai = getAi();
+  if (!ai) return "I am unable to connect to my brain (API Key missing).";
+
   try {
     let modelName = 'gemini-2.5-flash-lite'; // Default Fast
     let config: any = {
@@ -118,6 +140,8 @@ export const chatWithBot = async (
 // --- Vision & Media Understanding ---
 
 export const analyzeImage = async (base64Image: string, prompt: string): Promise<string> => {
+    const ai = getAi();
+    if (!ai) return "AI unavailable";
     try {
         const response = await ai.models.generateContent({
             model: 'gemini-3-pro-preview',
@@ -139,6 +163,7 @@ export const analyzeImage = async (base64Image: string, prompt: string): Promise
 
 export const generateImage = async (prompt: string, aspectRatio: '1:1' | '16:9' | '4:3' | '3:4' | '9:16' = '1:1'): Promise<string | null> => {
     const activeAi = await ensureApiKey();
+    if (!activeAi) return null;
     try {
         const response = await activeAi.models.generateContent({
             model: 'gemini-3-pro-image-preview',
@@ -161,6 +186,8 @@ export const generateImage = async (prompt: string, aspectRatio: '1:1' | '16:9' 
 }
 
 export const editImage = async (base64Image: string, prompt: string): Promise<string | null> => {
+    const ai = getAi();
+    if (!ai) return null;
     try {
         const response = await ai.models.generateContent({
             model: 'gemini-2.5-flash-image',
@@ -188,6 +215,7 @@ export const editImage = async (base64Image: string, prompt: string): Promise<st
 
 export const generateVideo = async (prompt: string, aspectRatio: '16:9' | '9:16' = '16:9'): Promise<string | null> => {
     const activeAi = await ensureApiKey();
+    if (!activeAi) return null;
     try {
         let operation = await activeAi.models.generateVideos({
             model: 'veo-3.1-fast-generate-preview',
@@ -223,6 +251,8 @@ export const generateVideo = async (prompt: string, aspectRatio: '16:9' | '9:16'
 // --- Audio Services ---
 
 export const textToSpeech = async (text: string): Promise<ArrayBuffer | null> => {
+    const ai = getAi();
+    if (!ai) return null;
     try {
         const response = await ai.models.generateContent({
             model: 'gemini-2.5-flash-preview-tts',
@@ -253,6 +283,8 @@ export const textToSpeech = async (text: string): Promise<ArrayBuffer | null> =>
 }
 
 export const transcribeAudio = async (base64Audio: string): Promise<string> => {
+    const ai = getAi();
+    if (!ai) return "";
     try {
         const response = await ai.models.generateContent({
             model: 'gemini-2.5-flash',
@@ -273,6 +305,8 @@ export const transcribeAudio = async (base64Audio: string): Promise<string> => {
 // --- Grounding (News/Weather) ---
 
 export const getGroundingInfo = async (query: string): Promise<any> => {
+    const ai = getAi();
+    if (!ai) return { text: "AI unavailable", chunks: [] };
     try {
         const response = await ai.models.generateContent({
             model: 'gemini-2.5-flash',
