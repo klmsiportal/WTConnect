@@ -10,8 +10,8 @@ import {
   updateProfile,
   User as FirebaseUser
 } from "firebase/auth";
-import { getAnalytics } from "firebase/analytics";
 
+// Your web app's Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyC5hFB3ICxzyMrlvtnQl-n-2Dkr2RFsmqc",
   authDomain: "fir-9b1f8.firebaseapp.com",
@@ -22,8 +22,9 @@ const firebaseConfig = {
   measurementId: "G-7FWY3QB5MY"
 };
 
+// Initialize Firebase
+// Note: Analytics removed to prevent potential crash in restricted environments
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app); 
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 
@@ -40,10 +41,12 @@ export const signInWithGoogle = async () => {
 export const registerWithEmail = async (name: string, email: string, pass: string) => {
     try {
         const result = await createUserWithEmailAndPassword(auth, email, pass);
-        await updateProfile(result.user, {
-            displayName: name,
-            photoURL: `https://ui-avatars.com/api/?name=${name}&background=random`
-        });
+        if (result.user) {
+            await updateProfile(result.user, {
+                displayName: name,
+                photoURL: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`
+            });
+        }
         return result.user;
     } catch (error) {
         throw error;

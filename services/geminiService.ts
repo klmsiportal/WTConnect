@@ -1,8 +1,21 @@
 
-
 import { GoogleGenAI, Type } from "@google/genai";
 
-const apiKey = process.env.API_KEY || '';
+// Safe access to API Key
+const getApiKey = () => {
+    try {
+        // @ts-ignore
+        if (typeof process !== 'undefined' && process.env && process.env.API_KEY) {
+            // @ts-ignore
+            return process.env.API_KEY;
+        }
+    } catch (e) {
+        // Ignore error
+    }
+    return '';
+};
+
+const apiKey = getApiKey();
 const ai = new GoogleGenAI({ apiKey });
 
 // Helper to check for key in demo environment for paid models
@@ -11,8 +24,7 @@ const ensureApiKey = async () => {
     const hasKey = await (window as any).aistudio.hasSelectedApiKey();
     if (!hasKey) {
       await (window as any).aistudio.openSelectKey();
-      // Re-initialize with potentially new key from environment if it was injected
-      return new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+      return new GoogleGenAI({ apiKey: getApiKey() });
     }
   }
   return ai;
@@ -196,7 +208,7 @@ export const generateVideo = async (prompt: string, aspectRatio: '16:9' | '9:16'
         const videoUri = operation.response?.generatedVideos?.[0]?.video?.uri;
         if (videoUri) {
             // Fetch the actual bytes
-            const res = await fetch(`${videoUri}&key=${process.env.API_KEY}`);
+            const res = await fetch(`${videoUri}&key=${getApiKey()}`);
             const blob = await res.blob();
             return URL.createObjectURL(blob);
         }
