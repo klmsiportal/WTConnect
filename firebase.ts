@@ -8,7 +8,8 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   updateProfile,
-  User as FirebaseUser
+  User as FirebaseUser,
+  onAuthStateChanged
 } from "firebase/auth";
 
 // Your web app's Firebase configuration
@@ -22,28 +23,57 @@ const firebaseConfig = {
   measurementId: "G-7FWY3QB5MY"
 };
 
-// Initialize Firebase with basic safeguards
+// ----------------------------------------------------------------------
+// ROBUST INITIALIZATION (Prevents White Screen on deployment)
+// ----------------------------------------------------------------------
 let app;
 let auth: any;
 let googleProvider: GoogleAuthProvider;
+let isMockMode = false;
 
 try {
     app = initializeApp(firebaseConfig);
     auth = getAuth(app);
     googleProvider = new GoogleAuthProvider();
 } catch (e) {
-    console.error("Firebase init failed:", e);
-    // Provide fallback mock auth if init fails to prevent white screen
+    console.warn("Firebase Initialization Failed - Switching to Mock Mode", e);
+    isMockMode = true;
+    
+    // Create a robust mock auth object to keep the app running
     auth = {
         currentUser: null,
-        onAuthStateChanged: () => () => {},
-    }
+        signOut: async () => { auth.currentUser = null; },
+    };
 }
 
 export { auth, googleProvider };
 
+// Wrapper for Auth State Listener
+export const onAuthStateChange = (callback: (user: FirebaseUser | null) => void) => {
+    if (isMockMode) {
+        // In mock mode, just return null immediately
+        callback(null);
+        return () => {};
+    }
+    
+    try {
+        return onAuthStateChanged(auth, callback);
+    } catch (e) {
+        console.warn("Auth Listener Error", e);
+        callback(null);
+        return () => {};
+    }
+}
+
 export const signInWithGoogle = async () => {
+  if (isMockMode) {
+      alert("Demo Mode: Simulating Google Login");
+      const mockUser = { uid: 'demo-123', displayName: 'Demo User', photoURL: 'https://ui-avatars.com/api/?name=Demo', email: 'demo@wtconnect.com' };
+      return mockUser as any;
+  }
+  
   if (!auth) throw new Error("Authentication unavailable");
+  
   try {
     const result = await signInWithPopup(auth, googleProvider);
     return result.user;
@@ -54,6 +84,11 @@ export const signInWithGoogle = async () => {
 };
 
 export const registerWithEmail = async (name: string, email: string, pass: string) => {
+    if (isMockMode) {
+        alert("Demo Mode: Account Created");
+        return { uid: 'new-123', displayName: name, email, photoURL: `https://ui-avatars.com/api/?name=${name}` };
+    }
+
     if (!auth) throw new Error("Authentication unavailable");
     try {
         const result = await createUserWithEmailAndPassword(auth, email, pass);
@@ -70,6 +105,11 @@ export const registerWithEmail = async (name: string, email: string, pass: strin
 }
 
 export const loginWithEmail = async (email: string, pass: string) => {
+    if (isMockMode) {
+        alert("Demo Mode: Signed In");
+        return { uid: 'demo-123', displayName: 'Demo User', email };
+    }
+
     if (!auth) throw new Error("Authentication unavailable");
     try {
         const result = await signInWithEmailAndPassword(auth, email, pass);
@@ -80,6 +120,11 @@ export const loginWithEmail = async (email: string, pass: string) => {
 }
 
 export const logout = async () => {
+  if (isMockMode) {
+      window.location.reload(); // Simple reload to clear state in demo
+      return;
+  }
+  
   if (!auth) return;
   try {
     await signOut(auth);

@@ -1,4 +1,4 @@
-import React, { ReactNode, ErrorInfo } from 'react';
+import React, { Component, ReactNode, ErrorInfo } from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 
@@ -11,7 +11,7 @@ interface ErrorBoundaryState {
   error: Error | null;
 }
 
-class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   public state: ErrorBoundaryState = { hasError: false, error: null };
 
   static getDerivedStateFromError(error: Error): ErrorBoundaryState {
@@ -26,10 +26,10 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
     if (this.state.hasError) {
       return (
         <div style={{ padding: '40px', fontFamily: 'system-ui, sans-serif', textAlign: 'center' }}>
-          <h1 style={{fontSize: '24px', marginBottom: '16px'}}>Something went wrong.</h1>
-          <p style={{marginBottom: '24px'}}>Please refresh the page. If the issue persists, contact support.</p>
-          <div style={{ backgroundColor: '#f3f4f6', padding: '16px', borderRadius: '8px', textAlign: 'left', overflow: 'auto', maxWidth: '600px', margin: '0 auto' }}>
-            <code style={{ color: '#ef4444' }}>{this.state.error?.message}</code>
+          <h1 style={{fontSize: '24px', marginBottom: '16px', color: '#e11d48'}}>Something went wrong.</h1>
+          <p style={{marginBottom: '24px'}}>The app crashed unexpectedly.</p>
+          <div style={{ backgroundColor: '#f3f4f6', padding: '16px', borderRadius: '8px', textAlign: 'left', overflow: 'auto', maxWidth: '600px', margin: '0 auto', fontSize: '12px', fontFamily: 'monospace' }}>
+            <strong style={{color: '#b91c1c'}}>Error:</strong> {this.state.error?.message}
           </div>
           <button 
             onClick={() => window.location.reload()}
@@ -57,4 +57,5 @@ if (rootElement) {
   );
 } else {
   console.error("Failed to find root element");
+  document.body.innerHTML = "<h1 style='color:red;text-align:center;margin-top:50px'>Critical Error: Root Element Missing</h1>";
 }

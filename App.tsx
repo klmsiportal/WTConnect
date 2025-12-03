@@ -10,8 +10,7 @@ import { Clips } from './components/Clips';
 import { Apps } from './components/Apps';
 import { Menu } from './components/Menu';
 import { ViewState, User, Post, ChatSession, Notification } from './types';
-import { auth, logout } from './firebase';
-import { onAuthStateChanged } from 'firebase/auth';
+import { auth, logout, onAuthStateChange } from './firebase';
 
 // Mock Data
 const MOCK_USERS: User[] = [
@@ -81,7 +80,18 @@ export default function App() {
   }, [isDarkMode]);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+    console.log("App Mounted. Checking Auth...");
+    
+    // Safety Timeout: If Firebase takes too long, stop loading
+    const safetyTimer = setTimeout(() => {
+        if (loading) {
+            console.warn("Auth check timed out. Forcing load completion.");
+            setLoading(false);
+        }
+    }, 3000);
+
+    const unsubscribe = onAuthStateChange((firebaseUser) => {
+      console.log("Auth State Changed:", firebaseUser ? "User Found" : "No User");
       if (firebaseUser) {
         setUser({
             id: firebaseUser.uid,
@@ -99,8 +109,13 @@ export default function App() {
         setUser(null);
       }
       setLoading(false);
+      clearTimeout(safetyTimer);
     });
-    return () => unsubscribe();
+    
+    return () => {
+        unsubscribe();
+        clearTimeout(safetyTimer);
+    };
   }, []);
 
   const handleLaunchApp = (appName: string, systemPrompt: string) => {
@@ -123,7 +138,12 @@ export default function App() {
   }
 
   if (loading) {
-      return <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900"><div className="animate-spin w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full"></div></div>;
+      return (
+          <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900">
+              <div className="animate-spin w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full mb-4"></div>
+              <p className="text-gray-500 font-medium">Starting WTConnect...</p>
+          </div>
+      );
   }
 
   if (!user) {

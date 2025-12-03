@@ -1,7 +1,9 @@
 
 import { GoogleGenAI, Type } from "@google/genai";
 
-// Safe access to API Key
+// ----------------------------------------------------------------------
+// SAFE ENVIRONMENT ACCESS (Prevents ReferenceError: process is not defined)
+// ----------------------------------------------------------------------
 const getApiKey = () => {
     try {
         // @ts-ignore
@@ -9,8 +11,11 @@ const getApiKey = () => {
             // @ts-ignore
             return process.env.API_KEY;
         }
+        // Fallback for some build tools that inject it globally
+        // @ts-ignore
+        if (typeof API_KEY !== 'undefined') return API_KEY;
     } catch (e) {
-        // Ignore error
+        // Silent fail
     }
     return '';
 };
@@ -22,7 +27,12 @@ const getAi = () => {
     if (!aiInstance) {
         const key = getApiKey();
         if (key) {
-            aiInstance = new GoogleGenAI({ apiKey: key });
+            try {
+                aiInstance = new GoogleGenAI({ apiKey: key });
+            } catch (e) {
+                console.error("Failed to initialize GoogleGenAI:", e);
+                return null;
+            }
         } else {
             console.warn("Gemini API Key is missing. AI features will not work.");
         }
@@ -33,11 +43,15 @@ const getAi = () => {
 // Helper to check for key in demo environment for paid models
 const ensureApiKey = async () => {
   if (typeof window !== 'undefined' && (window as any).aistudio) {
-    const hasKey = await (window as any).aistudio.hasSelectedApiKey();
-    if (!hasKey) {
-      await (window as any).aistudio.openSelectKey();
-      // Re-init with new key if possible, or just return existing if env var was set
-      return new GoogleGenAI({ apiKey: getApiKey() });
+    try {
+        const hasKey = await (window as any).aistudio.hasSelectedApiKey();
+        if (!hasKey) {
+          await (window as any).aistudio.openSelectKey();
+          // Re-init with new key if possible
+          return new GoogleGenAI({ apiKey: getApiKey() });
+        }
+    } catch (e) {
+        console.warn("AI Studio Key Check failed", e);
     }
   }
   return getAi();
