@@ -79,14 +79,11 @@ export const Navbar: React.FC<NavbarProps> = ({
             active={currentView === ViewState.APPS} 
             onClick={() => setView(ViewState.APPS)} 
           />
-           {/* @ts-ignore */}
            <NavItem 
             icon={<MenuIcon size={20} />} 
             label="Menu (All)" 
-            // @ts-ignore
-            active={currentView === 'MENU'} 
-            // @ts-ignore
-            onClick={() => setView('MENU')} 
+            active={currentView === ViewState.MENU} 
+            onClick={() => setView(ViewState.MENU)} 
           />
           <NavItem 
             icon={<User size={20} />} 
@@ -186,13 +183,10 @@ export const Navbar: React.FC<NavbarProps> = ({
             active={currentView === ViewState.CHAT} 
             onClick={() => setView(ViewState.CHAT)} 
           />
-           {/* @ts-ignore */}
            <MobileNavItem 
             icon={<MenuIcon size={24} />} 
-            // @ts-ignore
-            active={currentView === 'MENU'} 
-            // @ts-ignore
-            onClick={() => setView('MENU')} 
+            active={currentView === ViewState.MENU} 
+            onClick={() => setView(ViewState.MENU)} 
           />
           <MobileNavItem 
             icon={<User size={24} />} 

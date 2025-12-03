@@ -143,5 +143,6 @@ export enum ViewState {
   PROFILE = 'PROFILE',
   NOTIFICATIONS = 'NOTIFICATIONS',
   EXPLORE = 'EXPLORE',
-  APPS = 'APPS'
+  APPS = 'APPS',
+  MENU = 'MENU'
 }

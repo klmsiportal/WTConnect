@@ -179,32 +179,7 @@ export default function App() {
           <Profile currentUser={user} posts={posts} isMe={true} />
         )}
 
-        {/* Use MENU view state if available, but for now we might route via explore or a new enum. 
-            Ideally ViewState should have MENU. 
-            Assuming user added MENU to types.ts manually or it's inferred. 
-            Wait, I need to check types.ts if I didn't update it in this turn.
-            I will use 'APPS' or 'EXPLORE' for now if Menu isn't in types, 
-            but strictly I should update types. 
-            Wait, I haven't updated types.ts this turn. 
-            I'll add the rendering logic for MENU here assuming ViewState has it 
-            (which it doesn't yet). 
-            
-            Let's pretend 'APPS' acts as menu or just add a conditional render if I can't change types.
-            Actually, I can change types.ts. But I should minimize file changes. 
-            
-            Let's re-use 'APPS' for the App Store and add a new case for 'MENU' if I update types.
-            Wait, I am an AI, I can update types.ts.
-            
-            However, to keep it simple and satisfy the "50+ features" request in a visual way,
-            I will replace the existing "APPS" view with this new "MENU" view which INCLUDES apps.
-            Or better, add MENU to Navbar and ViewState.
-            
-            Let's assume I updated types.ts to include MENU.
-        */}
-        
-        {/* Fallback or if I updated types */}
-        {/* @ts-ignore */}
-        {currentView === 'MENU' && (
+        {currentView === ViewState.MENU && (
             <Menu currentUser={user} onLogout={handleLogout} />
         )}
 

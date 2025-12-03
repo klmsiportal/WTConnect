@@ -22,13 +22,28 @@ const firebaseConfig = {
   measurementId: "G-7FWY3QB5MY"
 };
 
-// Initialize Firebase
-// Note: Analytics removed to prevent potential crash in restricted environments
-const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
-export const googleProvider = new GoogleAuthProvider();
+// Initialize Firebase with basic safeguards
+let app;
+let auth: any;
+let googleProvider: GoogleAuthProvider;
+
+try {
+    app = initializeApp(firebaseConfig);
+    auth = getAuth(app);
+    googleProvider = new GoogleAuthProvider();
+} catch (e) {
+    console.error("Firebase init failed:", e);
+    // Provide fallback mock auth if init fails to prevent white screen
+    auth = {
+        currentUser: null,
+        onAuthStateChanged: () => () => {},
+    }
+}
+
+export { auth, googleProvider };
 
 export const signInWithGoogle = async () => {
+  if (!auth) throw new Error("Authentication unavailable");
   try {
     const result = await signInWithPopup(auth, googleProvider);
     return result.user;
@@ -39,6 +54,7 @@ export const signInWithGoogle = async () => {
 };
 
 export const registerWithEmail = async (name: string, email: string, pass: string) => {
+    if (!auth) throw new Error("Authentication unavailable");
     try {
         const result = await createUserWithEmailAndPassword(auth, email, pass);
         if (result.user) {
@@ -54,6 +70,7 @@ export const registerWithEmail = async (name: string, email: string, pass: strin
 }
 
 export const loginWithEmail = async (email: string, pass: string) => {
+    if (!auth) throw new Error("Authentication unavailable");
     try {
         const result = await signInWithEmailAndPassword(auth, email, pass);
         return result.user;
@@ -63,6 +80,7 @@ export const loginWithEmail = async (email: string, pass: string) => {
 }
 
 export const logout = async () => {
+  if (!auth) return;
   try {
     await signOut(auth);
   } catch (error) {
